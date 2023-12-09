@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model users {
+  id               Int                @id @default(autoincrement())
+  firstName        String             @db.VarChar(50)
+  lastName         String             @db.VarChar(50)
+  email            String             @unique @db.VarChar(50)
+  mobile           String             @unique @db.VarChar(50)
+  otp              String             @default("0") @db.VarChar(50)
+  password         String             @db.VarChar(50)
+  customers        customers[]
+  categories       categories[]
+  products         products[]
+  invoices         invoices[]
+  invoice_products invoice_products[]
+  createdAt        DateTime           @default(now()) @db.Timestamp(0)
+  updatedAt        DateTime           @default(now()) @updatedAt @db.Timestamp(0)
+}
+
+model customers {
+  id        Int        @id @default(autoincrement())
+  name      String     @db.VarChar(50)
+  email     String     @db.VarChar(50)
+  mobile    String     @db.VarChar(50)
+  user_id   Int
+  users     users      @relation(fields: [user_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  invoices  invoices[]
+  createdAt DateTime   @default(now()) @db.Timestamp(0)
+  updatedAt DateTime   @default(now()) @updatedAt @db.Timestamp(0)
+}
+
+model categories {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique @db.VarChar(50)
+  slug      String     @db.VarChar(50)
+  user_id   Int
+  users     users      @relation(fields: [user_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  products  products[]
+  createdAt DateTime   @default(now()) @db.Timestamp(0)
+  updatedAt DateTime   @default(now()) @updatedAt @db.Timestamp(0)
+}
+
+model products {
+  id               Int                @id @default(autoincrement())
+  name             String             @db.VarChar(50)
+  slug             String             @db.VarChar(50)
+  price            String             @db.VarChar(50)
+  unit             String             @db.VarChar(50)
+  user_id          Int
+  users            users              @relation(fields: [user_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  category_id      Int
+  categories       categories         @relation(fields: [category_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  invoice_products invoice_products[]
+  createdAt        DateTime           @default(now()) @db.Timestamp(0)
+  updatedAt        DateTime           @default(now()) @updatedAt @db.Timestamp(0)
+}
+
+model invoices {
+  id               Int                @id @default(autoincrement())
+  total            String             @db.VarChar(50)
+  discount         String             @db.VarChar(50)
+  vat              String             @db.VarChar(50)
+  payable          String             @db.VarChar(50)
+  user_id          Int
+  users            users              @relation(fields: [user_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  customer_id      Int
+  customers        customers          @relation(fields: [customer_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  invoice_products invoice_products[]
+  createdAt        DateTime           @default(now()) @db.Timestamp(0)
+  updatedAt        DateTime           @default(now()) @updatedAt @db.Timestamp(0)
+}
+
+model invoice_products {
+  id         Int      @id @default(autoincrement())
+  qty        String   @db.VarChar(50)
+  sale_price String   @db.VarChar(50)
+  user_id    Int
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  product_id Int
+  products   products @relation(fields: [product_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  invoice_id Int
+  invoices   invoices @relation(fields: [invoice_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  createdAt  DateTime @default(now()) @db.Timestamp(0)
+  updatedAt  DateTime @default(now()) @updatedAt @db.Timestamp(0)
+}
